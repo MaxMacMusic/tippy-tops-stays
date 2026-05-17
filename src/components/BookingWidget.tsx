@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { DayPicker, type DateRange } from "react-day-picker";
-import "react-day-picker/dist/style.css";
+import "react-day-picker/style.css";
 import { format, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import { getBookedRanges, submitBooking } from "@/lib/bookings.functions";

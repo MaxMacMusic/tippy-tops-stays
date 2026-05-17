@@ -1,26 +1,47 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SiteNav } from "@/components/SiteNav";
+import { Hero } from "@/components/Hero";
+import { Gallery } from "@/components/Gallery";
+import { About } from "@/components/About";
+import { BookingWidget } from "@/components/BookingWidget";
+import { SiteFooter } from "@/components/SiteFooter";
+import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "The Sunset Shanty at Tippy Tops — Gloucester Hinterland Stay" },
+      {
+        name: "description",
+        content:
+          "Book The Sunset Shanty at Tippy Tops — a rustic hilltop retreat in the Gloucester / Barrington Hinterland, NSW. Two-night minimum, sweeping valley views.",
+      },
+      { property: "og:title", content: "The Sunset Shanty at Tippy Tops" },
+      {
+        property: "og:description",
+        content: "Rustic shack, wide hinterland views, two-night minimum stay.",
+      },
+    ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
-
 function Index() {
-  return <PlaceholderIndex />;
+  return (
+    <main className="min-h-screen bg-background">
+      <SiteNav />
+      <Hero />
+      <Gallery />
+      <About />
+      <BookingWidget />
+      <SiteFooter />
+      <Toaster richColors position="top-center" />
+    </main>
+  );
 }

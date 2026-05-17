@@ -14,13 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          check_in: string
+          check_out: string
+          created_at: string
+          email: string
+          guest_name: string
+          guests: number
+          id: string
+          message: string | null
+          nights: number
+          phone: string | null
+          status: string
+          stripe_session_id: string | null
+          total_aud: number
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          created_at?: string
+          email: string
+          guest_name: string
+          guests?: number
+          id?: string
+          message?: string | null
+          nights: number
+          phone?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          total_aud: number
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          created_at?: string
+          email?: string
+          guest_name?: string
+          guests?: number
+          id?: string
+          message?: string | null
+          nights?: number
+          phone?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          total_aud?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_booked_ranges: {
+        Args: never
+        Returns: {
+          check_in: string
+          check_out: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

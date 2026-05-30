@@ -25,6 +25,11 @@ export function About() {
             the weather, and the wildlife that wanders past the deck at dusk.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+            Roll out a mat for yoga on the deck as the valley wakes up, and earn your stay
+            by crossing eleven causeways on the drive in — a slow, winding ribbon of water
+            and gravel that delivers you to this little slice of peaceful heaven.
+          </p>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             Bring boots, a bottle of red, and someone you like. Two-night minimum so you can
             actually unwind.
           </p>

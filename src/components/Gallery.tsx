@@ -6,12 +6,18 @@ import belted from "@/assets/belted-cows.jpeg";
 import cows from "@/assets/cows-fence.jpeg";
 import gate from "@/assets/cattle-gate.jpeg";
 import road from "@/assets/dirt-road.jpeg";
+import bedroom from "@/assets/interior-bedroom.jpg";
+import kitchen from "@/assets/interior-kitchen.jpg";
+import drinks from "@/assets/interior-drinks.jpg";
 
 const shots = [
   { src: deck, alt: "Hardwood deck looking across the valley", span: "md:col-span-2 md:row-span-2" },
-  { src: horses, alt: "Horses and cattle grazing the hilltop pasture", span: "" },
-  { src: hills, alt: "Rolling green hills with a farm dam", span: "" },
+  { src: bedroom, alt: "King bed dressed with linen, fresh towels rolled and waiting", span: "" },
+  { src: kitchen, alt: "Country kitchen with timber bench, crystal glasses and hanging mugs", span: "" },
   { src: storm, alt: "Dramatic storm rolling over the hinterland", span: "md:col-span-2" },
+  { src: drinks, alt: "Tea, hot chocolate and marshmallows on the welcome tray", span: "" },
+  { src: horses, alt: "Horses and cattle grazing the hilltop pasture", span: "" },
+  { src: hills, alt: "Rolling green hills with a farm dam", span: "md:col-span-2" },
   { src: belted, alt: "Belted galloway cattle on the dirt track", span: "" },
   { src: cows, alt: "Curious cows by the fence line", span: "" },
   { src: gate, alt: "Angus cattle at the gate at golden hour", span: "md:col-span-2" },

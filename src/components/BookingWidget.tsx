@@ -78,7 +78,7 @@ export function BookingWidget() {
       );
       setForm({ guest_name: "", email: "", phone: "", guests: 2, message: "" });
       setRange(undefined);
-      qc.invalidateQueries({ queryKey: ["booked-ranges"] });
+      qc.invalidateQueries({ queryKey: ["unavailable-ranges"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

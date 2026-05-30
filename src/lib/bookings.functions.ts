@@ -2,13 +2,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export const getBookedRanges = createServerFn({ method: "GET" }).handler(async () => {
-  const { data, error } = await supabaseAdmin.rpc("get_booked_ranges");
+export const getUnavailableRanges = createServerFn({ method: "GET" }).handler(async () => {
+  const { data, error } = await supabaseAdmin.rpc("get_unavailable_ranges");
   if (error) {
-    console.error("get_booked_ranges error", error);
-    return { ranges: [] as { check_in: string; check_out: string }[] };
+    console.error("get_unavailable_ranges error", error);
+    return { ranges: [] as { start_date: string; end_date: string }[] };
   }
   return { ranges: data ?? [] };
+});
+
+export const getNightlyRate = createServerFn({ method: "GET" }).handler(async () => {
+  const { data, error } = await supabaseAdmin
+    .from("settings")
+    .select("nightly_rate_aud")
+    .eq("id", 1)
+    .single();
+  if (error || !data) return { rate: 260 };
+  return { rate: data.nightly_rate_aud };
 });
 
 const bookingSchema = z.object({
@@ -30,14 +40,20 @@ export const submitBooking = createServerFn({ method: "POST" })
     const nights = Math.round((co.getTime() - ci.getTime()) / 86400000);
     if (nights < 2) throw new Error("Minimum 2 nights stay required.");
 
-    const total = nights * 260;
+    const { data: settings } = await supabaseAdmin
+      .from("settings")
+      .select("nightly_rate_aud")
+      .eq("id", 1)
+      .single();
+    const rate = settings?.nightly_rate_aud ?? 260;
+    const total = nights * rate;
 
-    // Check overlap
-    const { data: existing, error: rpcErr } = await supabaseAdmin.rpc("get_booked_ranges");
+    // Check overlap against bookings + blocked dates
+    const { data: existing, error: rpcErr } = await supabaseAdmin.rpc("get_unavailable_ranges");
     if (rpcErr) throw new Error("Could not check availability.");
     const overlap = (existing ?? []).some(
-      (r: { check_in: string; check_out: string }) =>
-        new Date(r.check_in) < co && new Date(r.check_out) > ci,
+      (r: { start_date: string; end_date: string }) =>
+        new Date(r.start_date) < co && new Date(r.end_date) > ci,
     );
     if (overlap) throw new Error("Those dates are no longer available.");
 

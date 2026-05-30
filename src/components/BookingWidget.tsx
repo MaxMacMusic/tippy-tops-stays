@@ -90,7 +90,7 @@ export function BookingWidget() {
           <p className="text-xs uppercase tracking-[0.3em] opacity-70">Reserve</p>
           <h2 className="mt-3 text-4xl md:text-5xl">Pick your dates</h2>
           <p className="mt-4 text-base opacity-80">
-            Two-night minimum. ${NIGHTLY} AUD per night, grand opening rate.
+            Two-night minimum. ${nightly} AUD per night, grand opening rate.
             Pay the full stay to confirm — or send an enquiry first.
           </p>
         </div>
@@ -126,7 +126,7 @@ export function BookingWidget() {
                     <div className="font-medium text-primary">
                       {format(range.from, "EEE d MMM")} → {format(range.to, "EEE d MMM")}
                     </div>
-                    <div className="text-muted-foreground">{nights} nights × ${NIGHTLY}</div>
+                    <div className="text-muted-foreground">{nights} nights × ${nightly}</div>
                   </div>
                   <div className="font-display text-2xl text-primary">${total}</div>
                 </div>
@@ -162,7 +162,7 @@ export function BookingWidget() {
                 onClick={() => setKind("booking")}
                 className="flex-1 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
               >
-                {mutation.isPending && kind === "booking" ? "Booking…" : `Book — $${total || NIGHTLY * 2}`}
+                {mutation.isPending && kind === "booking" ? "Booking…" : `Book — $${total || nightly * 2}`}
               </button>
               <button
                 type="submit"

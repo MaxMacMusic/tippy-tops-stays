@@ -5,9 +5,7 @@ import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
 import { format, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
-import { getBookedRanges, submitBooking } from "@/lib/bookings.functions";
-
-const NIGHTLY = 260;
+import { getUnavailableRanges, getNightlyRate, submitBooking } from "@/lib/bookings.functions";
 
 function toISO(d: Date) {
   // YYYY-MM-DD in local time
@@ -18,22 +16,29 @@ function toISO(d: Date) {
 }
 
 export function BookingWidget() {
-  const fetchRanges = useServerFn(getBookedRanges);
+  const fetchRanges = useServerFn(getUnavailableRanges);
+  const fetchRate = useServerFn(getNightlyRate);
   const submit = useServerFn(submitBooking);
   const qc = useQueryClient();
 
   const { data } = useQuery({
-    queryKey: ["booked-ranges"],
+    queryKey: ["unavailable-ranges"],
     queryFn: () => fetchRanges(),
   });
+
+  const { data: rateData } = useQuery({
+    queryKey: ["nightly-rate"],
+    queryFn: () => fetchRate(),
+  });
+  const nightly = rateData?.rate ?? 260;
 
   const disabledRanges = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const ranges =
-      data?.ranges.map((r) => {
-        const from = new Date(r.check_in);
-        const to = new Date(r.check_out);
+      data?.ranges.map((r: { start_date: string; end_date: string }) => {
+        const from = new Date(r.start_date);
+        const to = new Date(r.end_date);
         to.setDate(to.getDate() - 1);
         return { from, to };
       }) ?? [];
@@ -45,7 +50,8 @@ export function BookingWidget() {
   const [form, setForm] = useState({ guest_name: "", email: "", phone: "", guests: 2, message: "" });
 
   const nights = range?.from && range?.to ? differenceInCalendarDays(range.to, range.from) : 0;
-  const total = nights * NIGHTLY;
+  const total = nights * nightly;
+
   const valid = nights >= 2 && form.guest_name && form.email;
 
   const mutation = useMutation({
@@ -72,7 +78,7 @@ export function BookingWidget() {
       );
       setForm({ guest_name: "", email: "", phone: "", guests: 2, message: "" });
       setRange(undefined);
-      qc.invalidateQueries({ queryKey: ["booked-ranges"] });
+      qc.invalidateQueries({ queryKey: ["unavailable-ranges"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -84,7 +90,7 @@ export function BookingWidget() {
           <p className="text-xs uppercase tracking-[0.3em] opacity-70">Reserve</p>
           <h2 className="mt-3 text-4xl md:text-5xl">Pick your dates</h2>
           <p className="mt-4 text-base opacity-80">
-            Two-night minimum. ${NIGHTLY} AUD per night, grand opening rate.
+            Two-night minimum. ${nightly} AUD per night, grand opening rate.
             Pay the full stay to confirm — or send an enquiry first.
           </p>
         </div>
@@ -120,7 +126,7 @@ export function BookingWidget() {
                     <div className="font-medium text-primary">
                       {format(range.from, "EEE d MMM")} → {format(range.to, "EEE d MMM")}
                     </div>
-                    <div className="text-muted-foreground">{nights} nights × ${NIGHTLY}</div>
+                    <div className="text-muted-foreground">{nights} nights × ${nightly}</div>
                   </div>
                   <div className="font-display text-2xl text-primary">${total}</div>
                 </div>
@@ -156,7 +162,7 @@ export function BookingWidget() {
                 onClick={() => setKind("booking")}
                 className="flex-1 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
               >
-                {mutation.isPending && kind === "booking" ? "Booking…" : `Book — $${total || NIGHTLY * 2}`}
+                {mutation.isPending && kind === "booking" ? "Booking…" : `Book — $${total || nightly * 2}`}
               </button>
               <button
                 type="submit"

@@ -55,7 +55,9 @@ export const submitBooking = createServerFn({ method: "POST" })
       .eq("id", 1)
       .single();
     const rate = settings?.nightly_rate_aud ?? 260;
-    const total = nights * rate;
+    const subtotal = nights * rate;
+    const discount = nights > 4 ? Math.round(subtotal * 0.1) : 0;
+    const total = subtotal - discount;
 
     // Check overlap against bookings + blocked dates
     const { data: existing, error: rpcErr } = await supabaseAdmin.rpc("get_unavailable_ranges");

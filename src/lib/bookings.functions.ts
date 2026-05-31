@@ -21,6 +21,15 @@ export const getNightlyRate = createServerFn({ method: "GET" }).handler(async ()
   return { rate: data.nightly_rate_aud };
 });
 
+export const getContactEmail = createServerFn({ method: "GET" }).handler(async () => {
+  const { data } = await supabaseAdmin
+    .from("settings")
+    .select("contact_email")
+    .eq("id", 1)
+    .single();
+  return { email: (data as { contact_email?: string } | null)?.contact_email ?? "tippytopsproperty@gmail.com" };
+});
+
 const bookingSchema = z.object({
   guest_name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(255),

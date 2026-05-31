@@ -35,6 +35,11 @@ export function About() {
             compulsory — just take it slow.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+            You&apos;re only 40 minutes from the beaches of Forster and Black Head, and 30
+            minutes from the mountains, walks and rivers around Gloucester. Or do nothing
+            at all — bring a book, leave the phone in the car, and call it a digital detox.
+          </p>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             Bring boots, a bottle of red, and someone you like. Two-night minimum so you can
             actually unwind.
           </p>

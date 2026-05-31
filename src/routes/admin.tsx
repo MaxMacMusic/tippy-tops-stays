@@ -187,6 +187,33 @@ function Dashboard() {
           </form>
         </section>
 
+        {/* Enquiries email */}
+        <section className="mb-8 rounded-2xl bg-card p-6" style={{ boxShadow: "var(--shadow-soft)" }}>
+          <h2 className="font-display text-xl text-primary">Enquiries email</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The public email shown in the site footer for guest enquiries. Separate from your owner login.
+          </p>
+          <form
+            className="mt-4 flex flex-wrap items-end gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!emailInput.includes("@")) return toast.error("Enter a valid email.");
+              emailMut.mutate(emailInput);
+            }}
+          >
+            <label className="block flex-1 min-w-[260px]">
+              <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Public email</span>
+              <input type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </label>
+            <button type="submit" disabled={emailMut.isPending}
+              className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground disabled:opacity-40">
+              {emailMut.isPending ? "Saving…" : "Save email"}
+            </button>
+            <span className="text-sm text-muted-foreground">Current: {data.contactEmail}</span>
+          </form>
+        </section>
+
         {/* Blocked dates */}
         <section className="mb-8 rounded-2xl bg-card p-6" style={{ boxShadow: "var(--shadow-soft)" }}>
           <h2 className="font-display text-xl text-primary">Block dates</h2>

@@ -18,19 +18,36 @@ export const getAdminData = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
     const [{ data: settings }, { data: blocks }, { data: bookings }] = await Promise.all([
-      supabaseAdmin.from("settings").select("nightly_rate_aud").eq("id", 1).single(),
+      supabaseAdmin.from("settings").select("nightly_rate_aud, contact_email").eq("id", 1).single(),
       supabaseAdmin.from("blocked_dates").select("id, start_date, end_date, reason").order("start_date"),
       supabaseAdmin
         .from("bookings")
         .select("id, guest_name, email, phone, check_in, check_out, nights, total_aud, status, guests, message, created_at")
         .order("check_in", { ascending: true }),
     ]);
+    const s = settings as { nightly_rate_aud?: number; contact_email?: string } | null;
     return {
-      rate: settings?.nightly_rate_aud ?? 260,
+      rate: s?.nightly_rate_aud ?? 260,
+      contactEmail: s?.contact_email ?? "tippytopsproperty@gmail.com",
       blocks: blocks ?? [],
       bookings: bookings ?? [],
       isAdmin: true,
     };
+  });
+
+export const updateContactEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { email: string }) =>
+    z.object({ email: z.string().trim().email().max(255) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("settings")
+      .update({ contact_email: data.email, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const updateNightlyRate = createServerFn({ method: "POST" })

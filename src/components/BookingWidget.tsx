@@ -93,6 +93,7 @@ export function BookingWidget() {
           <h2 className="mt-3 text-4xl md:text-5xl">Pick your dates</h2>
           <p className="mt-4 text-base opacity-80">
             Two-night minimum. ${nightly} AUD per night, grand opening rate.
+            Stay 5 nights or more and 10% comes off automatically.
             Pay the full stay to confirm — or send an enquiry first.
           </p>
         </div>

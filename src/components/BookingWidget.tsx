@@ -50,7 +50,9 @@ export function BookingWidget() {
   const [form, setForm] = useState({ guest_name: "", email: "", phone: "", guests: 2, message: "" });
 
   const nights = range?.from && range?.to ? differenceInCalendarDays(range.to, range.from) : 0;
-  const total = nights * nightly;
+  const subtotal = nights * nightly;
+  const discount = nights > 4 ? Math.round(subtotal * 0.1) : 0;
+  const total = subtotal - discount;
 
   const valid = nights >= 2 && form.guest_name && form.email;
 
@@ -91,6 +93,7 @@ export function BookingWidget() {
           <h2 className="mt-3 text-4xl md:text-5xl">Pick your dates</h2>
           <p className="mt-4 text-base opacity-80">
             Two-night minimum. ${nightly} AUD per night, grand opening rate.
+            Stay 5 nights or more and 10% comes off automatically.
             Pay the full stay to confirm — or send an enquiry first.
           </p>
         </div>
@@ -121,17 +124,25 @@ export function BookingWidget() {
           >
             <div className="rounded-lg border border-border bg-secondary/40 p-4">
               {nights >= 2 && range?.from && range?.to ? (
-                <div className="flex items-center justify-between text-sm">
-                  <div>
-                    <div className="font-medium text-primary">
-                      {format(range.from, "EEE d MMM")} → {format(range.to, "EEE d MMM")}
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-primary">
+                        {format(range.from, "EEE d MMM")} → {format(range.to, "EEE d MMM")}
+                      </div>
+                      <div className="text-muted-foreground">{nights} nights × ${nightly}</div>
                     </div>
-                    <div className="text-muted-foreground">{nights} nights × ${nightly}</div>
+                    <div className="font-display text-2xl text-primary">${total}</div>
                   </div>
-                  <div className="font-display text-2xl text-primary">${total}</div>
+                  {discount > 0 && (
+                    <div className="flex items-center justify-between text-xs text-primary/80">
+                      <span>10% long-stay discount applied</span>
+                      <span>− ${discount}</span>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Select at least 2 nights to see the total.</p>
+                <p className="text-sm text-muted-foreground">Select at least 2 nights to see the total. Stay 5+ nights for 10% off.</p>
               )}
             </div>
 

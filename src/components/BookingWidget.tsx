@@ -124,17 +124,25 @@ export function BookingWidget() {
           >
             <div className="rounded-lg border border-border bg-secondary/40 p-4">
               {nights >= 2 && range?.from && range?.to ? (
-                <div className="flex items-center justify-between text-sm">
-                  <div>
-                    <div className="font-medium text-primary">
-                      {format(range.from, "EEE d MMM")} → {format(range.to, "EEE d MMM")}
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-primary">
+                        {format(range.from, "EEE d MMM")} → {format(range.to, "EEE d MMM")}
+                      </div>
+                      <div className="text-muted-foreground">{nights} nights × ${nightly}</div>
                     </div>
-                    <div className="text-muted-foreground">{nights} nights × ${nightly}</div>
+                    <div className="font-display text-2xl text-primary">${total}</div>
                   </div>
-                  <div className="font-display text-2xl text-primary">${total}</div>
+                  {discount > 0 && (
+                    <div className="flex items-center justify-between text-xs text-primary/80">
+                      <span>10% long-stay discount applied</span>
+                      <span>− ${discount}</span>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Select at least 2 nights to see the total.</p>
+                <p className="text-sm text-muted-foreground">Select at least 2 nights to see the total. Stay 5+ nights for 10% off.</p>
               )}
             </div>
 

@@ -30,6 +30,11 @@ export function About() {
             and gravel that delivers you to this little slice of peaceful heaven.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+            Tucked between Nabiac and Gloucester, it&apos;s roughly 3 hours 15 minutes from
+            Wahroonga. The track in is most easily navigated by 4WD, though it&apos;s not
+            compulsory — just take it slow.
+          </p>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             Bring boots, a bottle of red, and someone you like. Two-night minimum so you can
             actually unwind.
           </p>

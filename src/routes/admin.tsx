@@ -54,6 +54,7 @@ function Dashboard() {
   const qc = useQueryClient();
   const fetchData = useServerFn(getAdminData);
   const setRate = useServerFn(updateNightlyRate);
+  const setEmail = useServerFn(updateContactEmail);
   const addBlock = useServerFn(addBlockedRange);
   const delBlock = useServerFn(deleteBlockedRange);
 
@@ -64,13 +65,15 @@ function Dashboard() {
   });
 
   const [rateInput, setRateInput] = useState<string>("");
+  const [emailInput, setEmailInput] = useState<string>("");
   const [blockStart, setBlockStart] = useState("");
   const [blockEnd, setBlockEnd] = useState("");
   const [blockReason, setBlockReason] = useState("");
 
   useEffect(() => {
     if (data?.rate) setRateInput(String(data.rate));
-  }, [data?.rate]);
+    if (data?.contactEmail) setEmailInput(data.contactEmail);
+  }, [data?.rate, data?.contactEmail]);
 
   const rateMut = useMutation({
     mutationFn: (rate: number) => setRate({ data: { rate } }),
@@ -78,6 +81,16 @@ function Dashboard() {
       toast.success("Nightly rate updated.");
       qc.invalidateQueries({ queryKey: ["admin-data"] });
       qc.invalidateQueries({ queryKey: ["nightly-rate"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const emailMut = useMutation({
+    mutationFn: (email: string) => setEmail({ data: { email } }),
+    onSuccess: () => {
+      toast.success("Enquiries email updated.");
+      qc.invalidateQueries({ queryKey: ["admin-data"] });
+      qc.invalidateQueries({ queryKey: ["contact-email"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

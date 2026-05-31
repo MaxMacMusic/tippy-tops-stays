@@ -88,16 +88,19 @@ export type Database = {
       }
       settings: {
         Row: {
+          contact_email: string
           id: number
           nightly_rate_aud: number
           updated_at: string
         }
         Insert: {
+          contact_email?: string
           id?: number
           nightly_rate_aud?: number
           updated_at?: string
         }
         Update: {
+          contact_email?: string
           id?: number
           nightly_rate_aud?: number
           updated_at?: string

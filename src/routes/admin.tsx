@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import {
   getAdminData,
   updateNightlyRate,
+  updateContactEmail,
   addBlockedRange,
   deleteBlockedRange,
 } from "@/lib/admin.functions";

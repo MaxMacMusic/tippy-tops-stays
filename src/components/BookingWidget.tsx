@@ -50,7 +50,9 @@ export function BookingWidget() {
   const [form, setForm] = useState({ guest_name: "", email: "", phone: "", guests: 2, message: "" });
 
   const nights = range?.from && range?.to ? differenceInCalendarDays(range.to, range.from) : 0;
-  const total = nights * nightly;
+  const subtotal = nights * nightly;
+  const discount = nights > 4 ? Math.round(subtotal * 0.1) : 0;
+  const total = subtotal - discount;
 
   const valid = nights >= 2 && form.guest_name && form.email;
 

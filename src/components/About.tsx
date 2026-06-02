@@ -47,6 +47,13 @@ export function About() {
             stars.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+            Inside you&apos;ll find one queen bed, a kitchenette with everything you need,
+            a dining space, TV, air conditioning, BBQ, toaster and kettle — plus two
+            bathrooms, one of which is outside for that true country feel. Everything runs on
+            off-grid power, and high-speed Starlink internet keeps you connected if you
+            decide to.
+          </p>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             Bring boots, a bottle of red, and someone you like. Two-night minimum so you can
             actually unwind.
           </p>

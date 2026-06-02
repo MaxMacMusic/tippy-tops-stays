@@ -41,6 +41,12 @@ export function About() {
             at all — bring a book, leave the phone in the car, and call it a digital detox.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+            At night, the sky out here is something else — no light pollution, just a
+            blanket of stars so bright you&apos;ll forget what a streetlight looks like.
+            It&apos;s the perfect place to watch satellites drift by and wish on shooting
+            stars.
+          </p>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             Bring boots, a bottle of red, and someone you like. Two-night minimum so you can
             actually unwind.
           </p>

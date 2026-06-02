@@ -1,4 +1,5 @@
-import deck from "@/assets/deck-view.jpeg";
+import valleyAsset from "@/assets/valley-hills.jpg.asset.json";
+const deck = valleyAsset.url;
 
 const facts = [
   { label: "Sleeps", value: "Up to 4" },
@@ -20,7 +21,7 @@ export function About() {
             Slow mornings, long shadows, and the kind of quiet you can hear.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-            The Sunset Shanty is a rustic timber retreat perched at Tippy Tops, deep in the
+            The Sunset Shanty is a rustic retreat perched at Tippy Tops, deep in the
             Gloucester / Barrington Hinterland. It&apos;s simple by design — built for the view,
             the weather, and the wildlife that wanders past the deck at dusk.
           </p>

@@ -34,7 +34,7 @@ export function Gallery() {
             <h2 className="mt-3 text-4xl md:text-5xl">A working hilltop. Wild views.</h2>
           </div>
           <p className="hidden max-w-sm text-sm text-muted-foreground md:block">
-            Cattle, horses, escarpment trails and the soft moss-green folds of the Barrington Tops just over the next ridge.
+            Cattle, horses, escarpment trails and the soft moss-green folds of the Barrington Tops a short drive away.
           </p>
         </div>
         <div className="grid auto-rows-[220px] grid-cols-1 gap-3 md:grid-cols-4 md:gap-4">

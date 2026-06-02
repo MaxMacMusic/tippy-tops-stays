@@ -9,10 +9,13 @@ import road from "@/assets/dirt-road.jpeg";
 import bedroom from "@/assets/interior-bedroom.jpg";
 import kitchen from "@/assets/interior-kitchen.jpg";
 import drinks from "@/assets/interior-drinks.jpg";
+import loftAsset from "@/assets/interior-loft.jpg.asset.json";
+const loft = loftAsset.url;
 
 const shots = [
   { src: deck, alt: "Hardwood deck looking across the valley", span: "md:col-span-2 md:row-span-2" },
   { src: bedroom, alt: "King bed dressed with linen, fresh towels rolled and waiting", span: "" },
+  { src: loft, alt: "Loft bedroom nook with ladder and gallery wall of botanical prints", span: "" },
   { src: kitchen, alt: "Country kitchen with timber bench, crystal glasses and hanging mugs", span: "" },
   { src: storm, alt: "Dramatic storm rolling over the hinterland", span: "md:col-span-2" },
   { src: drinks, alt: "Tea, hot chocolate and marshmallows on the welcome tray", span: "" },

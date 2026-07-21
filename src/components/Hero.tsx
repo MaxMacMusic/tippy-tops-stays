@@ -1,5 +1,4 @@
-import heroAsset from "@/assets/hero-sunset.jpg.asset.json";
-const heroImage = heroAsset.url;
+import heroImage from "@/assets/hero-sunset.jpg";
 
 export function Hero() {
   return (

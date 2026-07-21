@@ -1,9 +1,28 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Database } from "@/integrations/supabase/types";
+
+function publicClient() {
+  const url = process.env.SUPABASE_URL!;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
+  return createClient<Database>(url, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
+          h.delete("Authorization");
+        }
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      },
+    },
+  });
+}
 
 export const getUnavailableRanges = createServerFn({ method: "GET" }).handler(async () => {
-  const { data, error } = await supabaseAdmin.rpc("get_unavailable_ranges");
+  const { data, error } = await publicClient().rpc("get_unavailable_ranges");
   if (error) {
     console.error("get_unavailable_ranges error", error);
     return { ranges: [] as { start_date: string; end_date: string }[] };
@@ -12,7 +31,7 @@ export const getUnavailableRanges = createServerFn({ method: "GET" }).handler(as
 });
 
 export const getNightlyRate = createServerFn({ method: "GET" }).handler(async () => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await publicClient()
     .from("settings")
     .select("nightly_rate_aud")
     .eq("id", 1)
@@ -22,12 +41,15 @@ export const getNightlyRate = createServerFn({ method: "GET" }).handler(async ()
 });
 
 export const getContactEmail = createServerFn({ method: "GET" }).handler(async () => {
-  const { data } = await supabaseAdmin
+  const { data } = await publicClient()
     .from("settings")
     .select("contact_email")
     .eq("id", 1)
     .single();
-  return { email: (data as { contact_email?: string } | null)?.contact_email ?? "tippytopsproperty@gmail.com" };
+  return {
+    email:
+      (data as { contact_email?: string } | null)?.contact_email ?? "tippytopsproperty@gmail.com",
+  };
 });
 
 const bookingSchema = z.object({
@@ -49,7 +71,9 @@ export const submitBooking = createServerFn({ method: "POST" })
     const nights = Math.round((co.getTime() - ci.getTime()) / 86400000);
     if (nights < 2) throw new Error("Minimum 2 nights stay required.");
 
-    const { data: settings } = await supabaseAdmin
+    const supabase = publicClient();
+
+    const { data: settings } = await supabase
       .from("settings")
       .select("nightly_rate_aud")
       .eq("id", 1)
@@ -60,7 +84,7 @@ export const submitBooking = createServerFn({ method: "POST" })
     const total = subtotal - discount;
 
     // Check overlap against bookings + blocked dates
-    const { data: existing, error: rpcErr } = await supabaseAdmin.rpc("get_unavailable_ranges");
+    const { data: existing, error: rpcErr } = await supabase.rpc("get_unavailable_ranges");
     if (rpcErr) throw new Error("Could not check availability.");
     const overlap = (existing ?? []).some(
       (r: { start_date: string; end_date: string }) =>
@@ -68,7 +92,7 @@ export const submitBooking = createServerFn({ method: "POST" })
     );
     if (overlap) throw new Error("Those dates are no longer available.");
 
-    const { data: inserted, error } = await supabaseAdmin
+    const { data: inserted, error } = await supabase
       .from("bookings")
       .insert({
         guest_name: data.guest_name,

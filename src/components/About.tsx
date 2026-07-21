@@ -1,5 +1,4 @@
-import valleyAsset from "@/assets/valley-hills.jpg.asset.json";
-const deck = valleyAsset.url;
+import deck from "@/assets/valley-hills.jpg";
 
 const facts = [
   { label: "Sleeps", value: "Up to 4" },

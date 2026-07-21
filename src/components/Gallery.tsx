@@ -9,8 +9,7 @@ import road from "@/assets/dirt-road.jpeg";
 import bedroom from "@/assets/interior-bedroom.jpg";
 import kitchen from "@/assets/interior-kitchen.jpg";
 import drinks from "@/assets/interior-drinks.jpg";
-import loftAsset from "@/assets/interior-loft.jpg.asset.json";
-const loft = loftAsset.url;
+import loft from "@/assets/interior-loft.jpg";
 
 const shots = [
   { src: deck, alt: "Hardwood deck looking across the valley", span: "md:col-span-2 md:row-span-2" },

@@ -95,14 +95,15 @@ export const submitBooking = createServerFn({ method: "POST" })
     const { data: rows, error } = await supabase.rpc("create_booking", {
       p_guest_name: data.guest_name,
       p_email: data.email,
-      p_phone: data.phone || null,
+      p_phone: data.phone || "",
       p_check_in: data.check_in,
       p_check_out: data.check_out,
       p_guests: data.guests,
       p_nights: nights,
       p_total_aud: total,
-      p_message: data.message || null,
+      p_message: data.message || "",
       p_status: data.kind === "enquiry" ? "enquiry" : "pending",
+
     });
 
     if (error) {

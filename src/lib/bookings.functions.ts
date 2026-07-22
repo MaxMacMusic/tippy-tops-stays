@@ -92,27 +92,33 @@ export const submitBooking = createServerFn({ method: "POST" })
     );
     if (overlap) throw new Error("Those dates are no longer available.");
 
-    const { data: inserted, error } = await supabase
-      .from("bookings")
-      .insert({
-        guest_name: data.guest_name,
-        email: data.email,
-        phone: data.phone || null,
-        check_in: data.check_in,
-        check_out: data.check_out,
-        guests: data.guests,
-        nights,
-        total_aud: total,
-        message: data.message || null,
-        status: data.kind === "enquiry" ? "enquiry" : "pending",
-      })
-      .select("id, nights, total_aud")
-      .single();
+    const { data: rows, error } = await supabase.rpc("create_booking", {
+      p_guest_name: data.guest_name,
+      p_email: data.email,
+      p_phone: data.phone || "",
+      p_check_in: data.check_in,
+      p_check_out: data.check_out,
+      p_guests: data.guests,
+      p_nights: nights,
+      p_total_aud: total,
+      p_message: data.message || "",
+      p_status: data.kind === "enquiry" ? "enquiry" : "pending",
+
+    });
 
     if (error) {
-      console.error("insert booking error", error);
+      console.error("create_booking error", error);
+      if (error.message?.includes("UNAVAILABLE")) {
+        throw new Error("Those dates are no longer available.");
+      }
+      if (error.message?.includes("MIN_NIGHTS")) {
+        throw new Error("Minimum 2 nights stay required.");
+      }
       throw new Error("Could not save booking. Please try again.");
     }
 
-    return { id: inserted.id, nights: inserted.nights, total_aud: inserted.total_aud };
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    if (!row) throw new Error("Could not save booking. Please try again.");
+    return { id: row.id, nights: row.nights, total_aud: row.total_aud };
   });
+

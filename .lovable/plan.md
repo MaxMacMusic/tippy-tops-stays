@@ -1,53 +1,63 @@
 ## Goal
 
-Make the app deployable to Netlify using only `SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY` (plus their `VITE_` twins). No server code will need `SUPABASE_SERVICE_ROLE_KEY`.
+Fix "Could not save booking. Please try again." without adding the service-role key and without exposing bookings PII.
 
-## What changes
+## Root cause
 
-### 1. Database migration (RLS + grants)
+`submitBooking` uses the anon client and calls `.from("bookings").insert(...).select().single()`. The `bookings` table intentionally has no SELECT policy for anon (PII), so the `RETURNING` step fails even when the INSERT itself is allowed.
 
-Two gaps today: the admin dashboard needs to read `bookings`, and the public booking form needs to call `get_unavailable_ranges()` — both currently work only because the code uses the service-role client.
+## Fix
 
-- Add RLS policy on `bookings`: admins can `SELECT`, `UPDATE`, `DELETE` (via `has_role(auth.uid(), 'admin')`). The existing anon `INSERT` policy stays.
-- Grant `SELECT, UPDATE, DELETE` on `public.bookings` to `authenticated` (currently only `INSERT` is reachable).
-- `GRANT EXECUTE` on `public.get_unavailable_ranges()` and `public.get_booked_ranges()` to `anon` and `authenticated` so the publishable-key client can call them.
+### 1. New migration — `public.create_booking` SECURITY DEFINER RPC
 
-No new tables, no schema changes to `settings` / `blocked_dates` / `user_roles` — their policies already work with a user-scoped or anon client.
+Create a fresh migration file (leave existing migrations untouched) that:
 
-### 2. `src/lib/admin.functions.ts` — use the user-scoped client
+- Defines `public.create_booking(p_guest_name text, p_email text, p_phone text, p_check_in date, p_check_out date, p_guests int, p_nights int, p_total_aud int, p_message text, p_status text) returns table(id uuid, nights int, total_aud int)`.
+- `language plpgsql`, `security definer`, `set search_path = public`.
+- Re-validates `p_nights >= 2` → raise exception `'MIN_NIGHTS'`.
+- Re-checks overlap using `get_unavailable_ranges()` (`start_date < p_check_out AND end_date > p_check_in`) → raise exception `'UNAVAILABLE'`.
+- Inserts a single row into `public.bookings` with the passed fields.
+- Returns `id, nights, total_aud` of the inserted row.
+- Grants: `revoke all on function public.create_booking(...) from public;` then `grant execute ... to anon, authenticated;`.
+- Strictly scoped — only touches `bookings` (insert) and `get_unavailable_ranges()`.
 
-Replace every `supabaseAdmin` call with `context.supabase` from `requireSupabaseAuth`. The existing admin RLS policies on `settings`, `blocked_dates`, and (new) `bookings` will authorize the admin automatically — no more manual `assertAdmin()` helper needed (RLS is the check).
+No changes to existing policies, grants, or the anon INSERT policy on `bookings`.
 
-Reads/writes affected: fetch settings, list blocked dates, list bookings, update contact email, update nightly rate, insert blocked range, delete blocked range.
+### 2. Update `src/lib/bookings.functions.ts`
 
-### 3. `src/lib/bookings.functions.ts` — use a server publishable client
+In `submitBooking`:
 
-Create a small helper inside the file (per `tanstack-server-functions` guidance) that builds a `createClient` with `SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`, no session persistence, and the `sb_`-key `fetch` shim (harmless for legacy JWT keys).
+- Keep the zod validation, nights/subtotal/discount/total math, and the pre-check via `get_unavailable_ranges` (nice UX, cheap).
+- Replace the `.from("bookings").insert(...).select().single()` block with:
+  ```ts
+  const { data: rows, error } = await supabase.rpc("create_booking", {
+    p_guest_name: data.guest_name,
+    p_email: data.email,
+    p_phone: data.phone || null,
+    p_check_in: data.check_in,
+    p_check_out: data.check_out,
+    p_guests: data.guests,
+    p_nights: nights,
+    p_total_aud: total,
+    p_message: data.message || null,
+    p_status: data.kind === "enquiry" ? "enquiry" : "pending",
+  });
+  ```
+- Error mapping:
+  - `error.message` contains `UNAVAILABLE` → throw `"Those dates are no longer available."`
+  - `error.message` contains `MIN_NIGHTS` → throw `"Minimum 2 nights stay required."`
+  - Any other error → log and throw `"Could not save booking. Please try again."`
+- Return `{ id, nights, total_aud }` from the first returned row.
 
-- `getUnavailableRanges`, `getNightlyRate`, `getContactEmail`: call through the publishable client. All three targets have public SELECT / SECURITY DEFINER access.
-- `submitBooking`: read `settings.nightly_rate_aud`, call `get_unavailable_ranges` RPC, and `insert` into `bookings` — all allowed for `anon` by the existing policies. The nights/total/discount math stays server-side, so the client can't tamper with the price.
+No other changes anywhere.
 
-### 4. Remove the service-role import path
+### 3. Verify
 
-After the two files above stop using it, `supabaseAdmin` is no longer imported anywhere. Leave `src/integrations/supabase/client.server.ts` in place (it's auto-generated and harmless when unused) — just don't reference it.
+- Build succeeds after types regenerate.
+- Submit an "enquiry" and a "booking" from `/` — both succeed and the calendar refreshes with the new unavailable range for `booking`.
+- Confirm `bookings` remains not publicly readable (anon SELECT still denied).
+- Admin dashboard, settings, blocked_dates, env vars, and UI untouched.
 
-### 5. Netlify env vars
+## Out of scope
 
-Configure in **Netlify → Site settings → Environment variables**:
-
-- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`
-- `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
-
-No `SUPABASE_SERVICE_ROLE_KEY` needed.
-
-## Order of operations
-
-1. Run the migration (add admin policies on `bookings`, grants, RPC EXECUTE grants). You'll approve it before it runs.
-2. After the migration is applied and types regenerate, edit `admin.functions.ts` and `bookings.functions.ts`.
-3. Verify: build succeeds, `/admin` still lists bookings + edits settings/blocks when signed in as the admin, `/` booking widget still shows unavailable dates and accepts a submission.
-
-## Behavior preserved
-
-- Same admin email gate (RLS on the `admin` role via `user_roles`).
-- Same 2-night minimum, same 10%-over-4-nights discount, same overlap check, same fields written to `bookings`.
-- No UI changes.
+UI, admin functions, settings/blocked_dates logic, env variables, service-role key.

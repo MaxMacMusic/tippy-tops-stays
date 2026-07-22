@@ -133,6 +133,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_booking: {
+        Args: {
+          p_check_in: string
+          p_check_out: string
+          p_email: string
+          p_guest_name: string
+          p_guests: number
+          p_message: string
+          p_nights: number
+          p_phone: string
+          p_status: string
+          p_total_aud: number
+        }
+        Returns: {
+          id: string
+          nights: number
+          total_aud: number
+        }[]
+      }
       get_booked_ranges: {
         Args: never
         Returns: {

@@ -7,12 +7,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   checkIsAdmin,
   getAdminData,
   updateNightlyRate,
   updateContactEmail,
   addBlockedRange,
   deleteBlockedRange,
+  updateBookingStatus,
+  deleteBooking,
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
+  checkIsAdmin,
   getAdminData,
   updateNightlyRate,
   updateContactEmail,
@@ -19,9 +20,26 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
+function NotAuthorised({ onSignOut }: { onSignOut: () => void }) {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
+      <Toaster richColors position="top-center" />
+      <h1 className="font-display text-2xl text-primary">Not authorised</h1>
+      <p className="max-w-md text-sm text-muted-foreground">
+        Your account is signed in but isn't an admin yet. Ask Lovable to grant admin to your email, then refresh this page.
+      </p>
+      <div className="flex gap-3">
+        <button onClick={onSignOut} className="rounded-full border border-primary px-5 py-2 text-sm text-primary">Sign out</button>
+        <Link to="/" className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground">Home</Link>
+      </div>
+    </main>
+  );
+}
+
 function AdminPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const verifyAdmin = useServerFn(checkIsAdmin);
 
   useEffect(() => {
     let mounted = true;
@@ -39,15 +57,33 @@ function AdminPage() {
     };
   }, [navigate]);
 
-  if (!ready) {
+  const adminCheck = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: () => verifyAdmin(),
+    enabled: ready,
+    retry: false,
+  });
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  }
+
+  if (!ready || adminCheck.isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background">
         <p className="text-sm text-muted-foreground">Loading…</p>
       </main>
     );
   }
+
+  if (adminCheck.error || !adminCheck.data?.isAdmin) {
+    return <NotAuthorised onSignOut={signOut} />;
+  }
+
   return <Dashboard />;
 }
+
 
 function Dashboard() {
   const navigate = useNavigate();

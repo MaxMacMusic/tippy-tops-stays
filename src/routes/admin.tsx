@@ -352,31 +352,104 @@ function Dashboard() {
         {/* Bookings */}
         <section className="rounded-2xl bg-card p-6" style={{ boxShadow: "var(--shadow-soft)" }}>
           <h2 className="font-display text-xl text-primary">Bookings & enquiries</h2>
-          {data.bookings.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">Nothing yet.</p>
-          ) : (
-            <ul className="mt-4 divide-y divide-border rounded-md border border-border">
-              {data.bookings.map((b) => (
-                <li key={b.id} className="px-4 py-3 text-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="font-medium text-primary">{b.guest_name}</div>
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-xs uppercase tracking-wider text-secondary-foreground">
-                      {b.status}
-                    </span>
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {format(new Date(b.check_in), "d MMM")} → {format(new Date(b.check_out), "d MMM yyyy")}
-                    {" · "}{b.nights} nights · ${b.total_aud} · {b.guests} guests
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {b.email}{b.phone ? ` · ${b.phone}` : ""}
-                  </div>
-                  {b.message && <div className="mt-1 text-xs italic text-muted-foreground">"{b.message}"</div>}
-                </li>
-              ))}
-            </ul>
-          )}
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {([
+              ["all", "All"],
+              ["enquiry", "Enquiries"],
+              ["pending", "Pending"],
+              ["confirmed", "Confirmed"],
+              ["past", "Past"],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setFilter(key)}
+                className={`rounded-full border px-4 py-1.5 text-xs transition-colors ${
+                  filter === key
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                }`}
+              >
+                {label} ({filterBookings(data.bookings, key).length})
+              </button>
+            ))}
+          </div>
+
+          {(() => {
+            const list = filterBookings(data.bookings, filter);
+            if (list.length === 0) {
+              return <p className="mt-4 text-sm text-muted-foreground">Nothing here.</p>;
+            }
+            return (
+              <ul className="mt-4 divide-y divide-border rounded-md border border-border">
+                {list.map((b) => (
+                  <li key={b.id} className="px-4 py-3 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="font-medium text-primary">{b.guest_name}</div>
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs uppercase tracking-wider text-secondary-foreground">
+                        {b.status}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {format(new Date(b.check_in), "d MMM")} → {format(new Date(b.check_out), "d MMM yyyy")}
+                      {" · "}{b.nights} nights · ${b.total_aud} · {b.guests} guests
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {b.email}{b.phone ? ` · ${b.phone}` : ""}
+                    </div>
+                    {b.message && <div className="mt-1 text-xs italic text-muted-foreground">"{b.message}"</div>}
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {(
+                        [
+                          ["confirmed", "Mark confirmed"],
+                          ["paid", "Mark paid"],
+                          ["cancelled", "Cancel"],
+                        ] as const
+                      ).map(([status, label]) => (
+                        <button
+                          key={status}
+                          disabled={statusMut.isPending || b.status === status}
+                          onClick={() => statusMut.mutate({ id: b.id, status })}
+                          className="rounded-full border border-border px-3 py-1 text-xs hover:border-primary hover:text-primary disabled:opacity-40"
+                        >
+                          {label}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setPendingDelete(b.id)}
+                        className="rounded-full border border-destructive px-3 py-1 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
         </section>
+
+        <AlertDialog open={pendingDelete !== null} onOpenChange={(o) => !o && setPendingDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this booking?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently removes the booking and its guest details. This can't be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep it</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => pendingDelete && delBookingMut.mutate(pendingDelete)}
+                disabled={delBookingMut.isPending}
+              >
+                {delBookingMut.isPending ? "Deleting…" : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
       </div>
     </main>
   );

@@ -97,7 +97,53 @@ function AdminPage() {
 }
 
 
+type BookingRow = {
+  id: string;
+  guest_name: string;
+  email: string;
+  phone: string | null;
+  check_in: string;
+  check_out: string;
+  nights: number;
+  total_aud: number;
+  status: string;
+  guests: number;
+  message: string | null;
+  created_at: string;
+};
+
+function filterBookings(bookings: BookingRow[], filter: string): BookingRow[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isPast = (b: BookingRow) => new Date(b.check_out) < today;
+
+  const list = bookings.filter((b) => {
+    switch (filter) {
+      case "enquiry":
+        return b.status === "enquiry" && !isPast(b);
+      case "pending":
+        return b.status === "pending" && !isPast(b);
+      case "confirmed":
+        return (b.status === "confirmed" || b.status === "paid") && !isPast(b);
+      case "past":
+        return isPast(b);
+      default:
+        return true;
+    }
+  });
+
+  return list.sort((a, b) => {
+    const pa = isPast(a) ? 1 : 0;
+    const pb = isPast(b) ? 1 : 0;
+    if (pa !== pb) return pa - pb;
+    const da = new Date(a.check_in).getTime();
+    const db = new Date(b.check_in).getTime();
+    return pa === 1 ? db - da : da - db;
+  });
+}
+
 function Dashboard() {
+
   const navigate = useNavigate();
   const qc = useQueryClient();
   const fetchData = useServerFn(getAdminData);

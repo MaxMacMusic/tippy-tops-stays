@@ -165,6 +165,29 @@ function Dashboard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const statusMut = useMutation({
+    mutationFn: (v: { id: string; status: string }) => setStatus({ data: v }),
+    onSuccess: () => {
+      toast.success("Booking updated.");
+      qc.invalidateQueries({ queryKey: ["admin-data"] });
+      qc.invalidateQueries({ queryKey: ["unavailable-ranges"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const delBookingMut = useMutation({
+    mutationFn: (id: string) => delBooking({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Booking deleted.");
+      setPendingDelete(null);
+      qc.invalidateQueries({ queryKey: ["admin-data"] });
+      qc.invalidateQueries({ queryKey: ["unavailable-ranges"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
+
   async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/login", replace: true });

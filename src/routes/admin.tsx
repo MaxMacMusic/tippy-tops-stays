@@ -105,6 +105,8 @@ function Dashboard() {
   const setEmail = useServerFn(updateContactEmail);
   const addBlock = useServerFn(addBlockedRange);
   const delBlock = useServerFn(deleteBlockedRange);
+  const setStatus = useServerFn(updateBookingStatus);
+  const delBooking = useServerFn(deleteBooking);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-data"],

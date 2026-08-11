@@ -119,6 +119,8 @@ function Dashboard() {
   const [blockStart, setBlockStart] = useState("");
   const [blockEnd, setBlockEnd] = useState("");
   const [blockReason, setBlockReason] = useState("");
+  const [filter, setFilter] = useState<"all" | "enquiry" | "pending" | "confirmed" | "past">("all");
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (data?.rate) setRateInput(String(data.rate));

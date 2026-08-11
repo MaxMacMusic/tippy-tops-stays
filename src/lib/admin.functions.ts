@@ -1,25 +1,30 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdmin, isAdminUser } from "./admin-guard.server";
+
+export const checkIsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => ({
+    isAdmin: await isAdminUser(context.supabase, context.userId),
+  }));
 
 export const getAdminData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
-    const [{ data: settings }, { data: blocks }, { data: bookings, error: bookingsErr }] =
-      await Promise.all([
-        supabase.from("settings").select("nightly_rate_aud, contact_email").eq("id", 1).single(),
-        supabase.from("blocked_dates").select("id, start_date, end_date, reason").order("start_date"),
-        supabase
-          .from("bookings")
-          .select(
-            "id, guest_name, email, phone, check_in, check_out, nights, total_aud, status, guests, message, created_at",
-          )
-          .order("check_in", { ascending: true }),
-      ]);
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
 
-    // If RLS blocks bookings read, the caller isn't an admin.
-    if (bookingsErr) throw new Error("Not authorised.");
+    const [{ data: settings }, { data: blocks }, { data: bookings }] = await Promise.all([
+      supabase.from("settings").select("nightly_rate_aud, contact_email").eq("id", 1).single(),
+      supabase.from("blocked_dates").select("id, start_date, end_date, reason").order("start_date"),
+      supabase
+        .from("bookings")
+        .select(
+          "id, guest_name, email, phone, check_in, check_out, nights, total_aud, status, guests, message, created_at",
+        )
+        .order("check_in", { ascending: true }),
+    ]);
 
     const s = settings as { nightly_rate_aud?: number; contact_email?: string } | null;
     return {
@@ -37,6 +42,7 @@ export const updateContactEmail = createServerFn({ method: "POST" })
     z.object({ email: z.string().trim().email().max(255) }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("settings")
       .update({ contact_email: data.email, updated_at: new Date().toISOString() })
@@ -51,6 +57,7 @@ export const updateNightlyRate = createServerFn({ method: "POST" })
     z.object({ rate: z.number().int().min(1).max(10000) }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("settings")
       .update({ nightly_rate_aud: data.rate, updated_at: new Date().toISOString() })
@@ -71,6 +78,7 @@ export const addBlockedRange = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
     if (new Date(data.end_date) < new Date(data.start_date)) {
       throw new Error("End date must be on or after start date.");
     }
@@ -87,6 +95,7 @@ export const deleteBlockedRange = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
     const { error } = await context.supabase.from("blocked_dates").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };

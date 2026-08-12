@@ -58,7 +58,7 @@ const bookingSchema = z.object({
   phone: z.string().trim().max(40).optional().or(z.literal("")),
   check_in: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   check_out: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  guests: z.number().int().min(1).max(6),
+  guests: z.number().int().min(1).max(4),
   message: z.string().trim().max(2000).optional().or(z.literal("")),
   kind: z.enum(["enquiry", "booking"]),
 });
@@ -119,6 +119,63 @@ export const submitBooking = createServerFn({ method: "POST" })
 
     const row = Array.isArray(rows) ? rows[0] : rows;
     if (!row) throw new Error("Could not save booking. Please try again.");
+
+    // Notify the owner. A failed email must never lose a booking.
+    try {
+      const apiKey = process.env.RESEND_API_KEY;
+      if (!apiKey) throw new Error("RESEND_API_KEY is not configured");
+
+      const { data: contact } = await supabase
+        .from("settings")
+        .select("contact_email")
+        .eq("id", 1)
+        .single();
+      const to =
+        (contact as { contact_email?: string } | null)?.contact_email ??
+        "tippytopsproperty@gmail.com";
+
+      const status = data.kind === "enquiry" ? "enquiry" : "pending";
+      const label = data.kind === "enquiry" ? "New enquiry" : "New booking request";
+      const esc = (s: string) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+      const html = `
+        <h2>${label}</h2>
+        <ul>
+          <li><strong>Guest:</strong> ${esc(data.guest_name)}</li>
+          <li><strong>Email:</strong> ${esc(data.email)}</li>
+          <li><strong>Phone:</strong> ${esc(data.phone || "—")}</li>
+          <li><strong>Check-in:</strong> ${data.check_in}</li>
+          <li><strong>Check-out:</strong> ${data.check_out}</li>
+          <li><strong>Nights:</strong> ${nights}</li>
+          <li><strong>Guests:</strong> ${data.guests}</li>
+          <li><strong>Total:</strong> $${total} AUD</li>
+          <li><strong>Status:</strong> ${status}</li>
+        </ul>
+        <p><strong>Message:</strong><br/>${esc(data.message || "—").replace(/\n/g, "<br/>")}</p>
+      `;
+
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          from: "Sunset Shanty <onboarding@resend.dev>",
+          to: [to],
+          reply_to: data.email,
+          subject: `${label} — ${data.check_in} to ${data.check_out}`,
+          html,
+        }),
+      });
+      if (!res.ok) {
+        console.error("resend send failed", res.status, await res.text());
+      }
+    } catch (e) {
+      console.error("owner notification email failed", e);
+    }
+
     return { id: row.id, nights: row.nights, total_aud: row.total_aud };
   });
 

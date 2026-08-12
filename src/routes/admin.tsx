@@ -28,7 +28,12 @@ import {
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Owner dashboard — The Sunset Shanty" }] }),
+  head: () => ({
+    meta: [
+      { title: "Owner dashboard — The Sunset Shanty" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: AdminPage,
 });
 

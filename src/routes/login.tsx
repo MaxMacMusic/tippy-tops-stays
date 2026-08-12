@@ -5,7 +5,12 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Owner login — The Sunset Shanty" }] }),
+  head: () => ({
+    meta: [
+      { title: "Owner login — The Sunset Shanty" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: LoginPage,
 });
 

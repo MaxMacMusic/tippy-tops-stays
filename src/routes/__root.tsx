@@ -72,15 +72,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "The Sunset Shanty — Gloucester, NSW" },
+      {
+        name: "description",
+        content:
+          "A rustic shack at Tippy Tops in the Gloucester and Barrington hinterland. Two-night minimum stays with big sunsets and quiet hills.",
+      },
+      { name: "author", content: "The Sunset Shanty" },
+      { property: "og:site_name", content: "The Sunset Shanty" },
+      { property: "og:title", content: "The Sunset Shanty — Gloucester, NSW" },
+      {
+        property: "og:description",
+        content:
+          "A rustic shack at Tippy Tops in the Gloucester and Barrington hinterland. Two-night minimum stays with big sunsets and quiet hills.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+
     links: [
       {
         rel: "stylesheet",

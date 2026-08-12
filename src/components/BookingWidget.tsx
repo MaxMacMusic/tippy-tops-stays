@@ -75,7 +75,7 @@ export function BookingWidget() {
     onSuccess: (res) => {
       toast.success(
         kind === "booking"
-          ? `Booking received — $${res.total_aud} AUD for ${res.nights} nights. We'll email payment details shortly.`
+          ? `Request received — $${res.total_aud} AUD for ${res.nights} nights. No payment taken; we'll confirm availability and email an invoice within 24 hours.`
           : "Enquiry sent — we'll be in touch within 24 hours.",
       );
       setForm({ guest_name: "", email: "", phone: "", guests: 2, message: "" });
@@ -94,8 +94,9 @@ export function BookingWidget() {
           <p className="mt-4 text-base opacity-80">
             Two-night minimum. ${nightly} AUD per night, grand opening rate.
             Stay 5 nights or more and 10% comes off automatically.
-            Pay the full stay to confirm — or send an enquiry first.
+            No payment is taken online — request your dates or send an enquiry and we&apos;ll confirm by email.
           </p>
+
         </div>
 
         <div className="grid gap-10 rounded-2xl bg-card p-6 text-foreground md:grid-cols-[1fr_1fr] md:p-10" style={{ boxShadow: "var(--shadow-lift)" }}>
@@ -166,14 +167,17 @@ export function BookingWidget() {
               <textarea rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={inputCls} />
             </Field>
 
-            <div className="mt-2 flex gap-3">
+            <p className="mt-2 text-sm font-medium text-primary">
+              Total: ${total || nightly * 2} AUD
+            </p>
+            <div className="mt-1 flex gap-3">
               <button
                 type="submit"
                 disabled={!valid || mutation.isPending}
                 onClick={() => setKind("booking")}
                 className="flex-1 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
               >
-                {mutation.isPending && kind === "booking" ? "Booking…" : `Book — $${total || nightly * 2}`}
+                {mutation.isPending && kind === "booking" ? "Sending…" : "Request these dates"}
               </button>
               <button
                 type="submit"
@@ -185,8 +189,9 @@ export function BookingWidget() {
               </button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Payment is handled securely. You&apos;ll receive a confirmation email with payment details once your booking is received.
+              No payment is taken now. We&apos;ll confirm availability and email you an invoice within 24 hours.
             </p>
+
           </form>
         </div>
       </div>

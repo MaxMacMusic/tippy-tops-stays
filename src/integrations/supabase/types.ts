@@ -86,24 +86,54 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_periods: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          name: string
+          nightly_rate_aud: number
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          name: string
+          nightly_rate_aud: number
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          name?: string
+          nightly_rate_aud?: number
+          start_date?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           contact_email: string
           id: number
           nightly_rate_aud: number
           updated_at: string
+          weekend_rate_aud: number
         }
         Insert: {
           contact_email?: string
           id?: number
           nightly_rate_aud?: number
           updated_at?: string
+          weekend_rate_aud?: number
         }
         Update: {
           contact_email?: string
           id?: number
           nightly_rate_aud?: number
           updated_at?: string
+          weekend_rate_aud?: number
         }
         Relationships: []
       }

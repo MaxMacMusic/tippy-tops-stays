@@ -20,12 +20,17 @@ import {
   checkIsAdmin,
   getAdminData,
   updateNightlyRate,
+  updateWeekendRate,
+  addRatePeriod,
+  updateRatePeriod,
+  deleteRatePeriod,
   updateContactEmail,
   addBlockedRange,
   deleteBlockedRange,
   updateBookingStatus,
   deleteBooking,
 } from "@/lib/admin.functions";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({

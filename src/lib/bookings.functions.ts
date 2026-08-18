@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { quoteStay } from "@/lib/pricing";
+
 
 function publicClient() {
   const url = process.env.SUPABASE_URL!;

@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { quoteStay } from "@/lib/pricing";
+
 
 function publicClient() {
   const url = process.env.SUPABASE_URL!;
@@ -31,14 +33,21 @@ export const getUnavailableRanges = createServerFn({ method: "GET" }).handler(as
 });
 
 export const getNightlyRate = createServerFn({ method: "GET" }).handler(async () => {
-  const { data, error } = await publicClient()
-    .from("settings")
-    .select("nightly_rate_aud")
-    .eq("id", 1)
-    .single();
-  if (error || !data) return { rate: 260 };
-  return { rate: data.nightly_rate_aud };
+  const client = publicClient();
+  const [{ data: settings }, { data: periods }] = await Promise.all([
+    client.from("settings").select("nightly_rate_aud, weekend_rate_aud").eq("id", 1).single(),
+    client
+      .from("rate_periods")
+      .select("id, name, start_date, end_date, nightly_rate_aud")
+      .order("start_date"),
+  ]);
+  return {
+    rate: settings?.nightly_rate_aud ?? 260,
+    weekendRate: settings?.weekend_rate_aud ?? settings?.nightly_rate_aud ?? 260,
+    periods: periods ?? [],
+  };
 });
+
 
 export const getContactEmail = createServerFn({ method: "GET" }).handler(async () => {
   const { data } = await publicClient()
@@ -73,15 +82,22 @@ export const submitBooking = createServerFn({ method: "POST" })
 
     const supabase = publicClient();
 
-    const { data: settings } = await supabase
-      .from("settings")
-      .select("nightly_rate_aud")
-      .eq("id", 1)
-      .single();
-    const rate = settings?.nightly_rate_aud ?? 260;
-    const subtotal = nights * rate;
-    const discount = nights > 4 ? Math.round(subtotal * 0.1) : 0;
-    const total = subtotal - discount;
+    const [{ data: settings }, { data: periods }] = await Promise.all([
+      supabase.from("settings").select("nightly_rate_aud, weekend_rate_aud").eq("id", 1).single(),
+      supabase
+        .from("rate_periods")
+        .select("id, name, start_date, end_date, nightly_rate_aud")
+        .order("start_date"),
+    ]);
+    const midweekRate = settings?.nightly_rate_aud ?? 260;
+    const { total } = quoteStay({
+      check_in: data.check_in,
+      check_out: data.check_out,
+      midweekRate,
+      weekendRate: settings?.weekend_rate_aud ?? midweekRate,
+      periods: periods ?? [],
+    });
+
 
     // Check overlap against bookings + blocked dates
     const { data: existing, error: rpcErr } = await supabase.rpc("get_unavailable_ranges");

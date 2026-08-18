@@ -20,12 +20,17 @@ import {
   checkIsAdmin,
   getAdminData,
   updateNightlyRate,
+  updateWeekendRate,
+  addRatePeriod,
+  updateRatePeriod,
+  deleteRatePeriod,
   updateContactEmail,
   addBlockedRange,
   deleteBlockedRange,
   updateBookingStatus,
   deleteBooking,
 } from "@/lib/admin.functions";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -153,6 +158,10 @@ function Dashboard() {
   const qc = useQueryClient();
   const fetchData = useServerFn(getAdminData);
   const setRate = useServerFn(updateNightlyRate);
+  const setWeekend = useServerFn(updateWeekendRate);
+  const addPeriod = useServerFn(addRatePeriod);
+  const editPeriod = useServerFn(updateRatePeriod);
+  const delPeriod = useServerFn(deleteRatePeriod);
   const setEmail = useServerFn(updateContactEmail);
   const addBlock = useServerFn(addBlockedRange);
   const delBlock = useServerFn(deleteBlockedRange);
@@ -166,6 +175,11 @@ function Dashboard() {
   });
 
   const [rateInput, setRateInput] = useState<string>("");
+  const [weekendInput, setWeekendInput] = useState<string>("");
+  const [periodName, setPeriodName] = useState("");
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
+  const [periodRate, setPeriodRate] = useState("");
   const [emailInput, setEmailInput] = useState<string>("");
   const [blockStart, setBlockStart] = useState("");
   const [blockEnd, setBlockEnd] = useState("");
@@ -175,18 +189,69 @@ function Dashboard() {
 
   useEffect(() => {
     if (data?.rate) setRateInput(String(data.rate));
+    if (data?.weekendRate) setWeekendInput(String(data.weekendRate));
     if (data?.contactEmail) setEmailInput(data.contactEmail);
-  }, [data?.rate, data?.contactEmail]);
+  }, [data?.rate, data?.weekendRate, data?.contactEmail]);
+
+  function invalidateRates() {
+    qc.invalidateQueries({ queryKey: ["admin-data"] });
+    qc.invalidateQueries({ queryKey: ["nightly-rate"] });
+  }
 
   const rateMut = useMutation({
     mutationFn: (rate: number) => setRate({ data: { rate } }),
     onSuccess: () => {
-      toast.success("Nightly rate updated.");
-      qc.invalidateQueries({ queryKey: ["admin-data"] });
-      qc.invalidateQueries({ queryKey: ["nightly-rate"] });
+      toast.success("Midweek rate updated.");
+      invalidateRates();
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const weekendMut = useMutation({
+    mutationFn: (rate: number) => setWeekend({ data: { rate } }),
+    onSuccess: () => {
+      toast.success("Weekend rate updated.");
+      invalidateRates();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const addPeriodMut = useMutation({
+    mutationFn: () =>
+      addPeriod({
+        data: {
+          name: periodName,
+          start_date: periodStart,
+          end_date: periodEnd,
+          rate: Number(periodRate),
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Rate period added.");
+      setPeriodName(""); setPeriodStart(""); setPeriodEnd(""); setPeriodRate("");
+      invalidateRates();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const editPeriodMut = useMutation({
+    mutationFn: (v: { id: string; rate: number }) => editPeriod({ data: v }),
+    onSuccess: () => {
+      toast.success("Rate period updated.");
+      invalidateRates();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const delPeriodMut = useMutation({
+    mutationFn: (id: string) => delPeriod({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Rate period removed.");
+      invalidateRates();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const emailMut = useMutation({
     mutationFn: (email: string) => setEmail({ data: { email } }),
@@ -287,31 +352,140 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Nightly rate */}
+        {/* Base rates */}
         <section className="mb-8 rounded-2xl bg-card p-6" style={{ boxShadow: "var(--shadow-soft)" }}>
-          <h2 className="font-display text-xl text-primary">Nightly rate</h2>
-          <p className="mt-1 text-sm text-muted-foreground">The price shown on the booking form (AUD).</p>
+          <h2 className="font-display text-xl text-primary">Base nightly rates</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Midweek covers Sunday–Thursday nights, weekend covers Friday and Saturday nights (AUD).
+          </p>
+          <div className="mt-4 grid gap-6 md:grid-cols-2">
+            <form
+              className="flex flex-wrap items-end gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const n = Number(rateInput);
+                if (!Number.isFinite(n) || n < 1) return toast.error("Enter a valid rate.");
+                rateMut.mutate(n);
+              }}
+            >
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Midweek $ / night</span>
+                <input type="number" min={1} value={rateInput} onChange={(e) => setRateInput(e.target.value)}
+                  className="w-32 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              </label>
+              <button type="submit" disabled={rateMut.isPending}
+                className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground disabled:opacity-40">
+                {rateMut.isPending ? "Saving…" : "Save"}
+              </button>
+              <span className="text-sm text-muted-foreground">Now: ${data.rate}</span>
+            </form>
+
+            <form
+              className="flex flex-wrap items-end gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const n = Number(weekendInput);
+                if (!Number.isFinite(n) || n < 1) return toast.error("Enter a valid rate.");
+                weekendMut.mutate(n);
+              }}
+            >
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Weekend $ / night</span>
+                <input type="number" min={1} value={weekendInput} onChange={(e) => setWeekendInput(e.target.value)}
+                  className="w-32 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              </label>
+              <button type="submit" disabled={weekendMut.isPending}
+                className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground disabled:opacity-40">
+                {weekendMut.isPending ? "Saving…" : "Save"}
+              </button>
+              <span className="text-sm text-muted-foreground">Now: ${data.weekendRate}</span>
+            </form>
+          </div>
+        </section>
+
+        {/* Seasonal rate periods */}
+        <section className="mb-8 rounded-2xl bg-card p-6" style={{ boxShadow: "var(--shadow-soft)" }}>
+          <h2 className="font-display text-xl text-primary">Special rate periods</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Peak, school holiday or Christmas pricing. These override the base rates for every night in
+            the range (both dates included). If two periods overlap, the shorter one wins.
+          </p>
           <form
-            className="mt-4 flex flex-wrap items-end gap-3"
+            className="mt-4 grid gap-3 md:grid-cols-[2fr_1fr_1fr_1fr_auto]"
             onSubmit={(e) => {
               e.preventDefault();
-              const n = Number(rateInput);
+              const n = Number(periodRate);
+              if (!periodName.trim()) return toast.error("Name this period.");
+              if (!periodStart || !periodEnd) return toast.error("Pick a start and end date.");
               if (!Number.isFinite(n) || n < 1) return toast.error("Enter a valid rate.");
-              rateMut.mutate(n);
+              addPeriodMut.mutate();
             }}
           >
             <label className="block">
-              <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">$ per night</span>
-              <input type="number" min={1} value={rateInput} onChange={(e) => setRateInput(e.target.value)}
-                className="w-40 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</span>
+              <input value={periodName} onChange={(e) => setPeriodName(e.target.value)} placeholder="Christmas, Easter peak…"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
             </label>
-            <button type="submit" disabled={rateMut.isPending}
-              className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground disabled:opacity-40">
-              {rateMut.isPending ? "Saving…" : "Save rate"}
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">From</span>
+              <input required type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">To</span>
+              <input required type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">$ / night</span>
+              <input type="number" min={1} value={periodRate} onChange={(e) => setPeriodRate(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </label>
+            <button type="submit" disabled={addPeriodMut.isPending}
+              className="self-end rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground disabled:opacity-40">
+              {addPeriodMut.isPending ? "Adding…" : "Add period"}
             </button>
-            <span className="text-sm text-muted-foreground">Current: ${data.rate}</span>
           </form>
+
+          <div className="mt-6">
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Current periods</h3>
+            {data.periods.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No special periods — base rates apply all year.</p>
+            ) : (
+              <ul className="divide-y divide-border rounded-md border border-border">
+                {data.periods.map((p) => (
+                  <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
+                    <div>
+                      <div className="font-medium text-primary">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {format(new Date(p.start_date), "d MMM yyyy")} → {format(new Date(p.end_date), "d MMM yyyy")}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        defaultValue={p.nightly_rate_aud}
+                        onBlur={(e) => {
+                          const n = Number(e.target.value);
+                          if (Number.isFinite(n) && n >= 1 && n !== p.nightly_rate_aud) {
+                            editPeriodMut.mutate({ id: p.id, rate: n });
+                          }
+                        }}
+                        className="w-24 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                      />
+                      <button onClick={() => delPeriodMut.mutate(p.id)} disabled={delPeriodMut.isPending}
+                        className="rounded-full border border-border px-3 py-1 text-xs hover:border-primary hover:text-primary">
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </section>
+
 
         {/* Enquiries email */}
         <section className="mb-8 rounded-2xl bg-card p-6" style={{ boxShadow: "var(--shadow-soft)" }}>

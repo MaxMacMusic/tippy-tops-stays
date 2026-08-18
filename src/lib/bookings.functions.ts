@@ -90,7 +90,7 @@ export const submitBooking = createServerFn({ method: "POST" })
         .order("start_date"),
     ]);
     const midweekRate = settings?.nightly_rate_aud ?? 260;
-    const { discount, total } = quoteStay({
+    const { total } = quoteStay({
       check_in: data.check_in,
       check_out: data.check_out,
       midweekRate,

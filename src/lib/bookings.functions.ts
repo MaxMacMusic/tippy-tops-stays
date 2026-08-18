@@ -80,15 +80,22 @@ export const submitBooking = createServerFn({ method: "POST" })
 
     const supabase = publicClient();
 
-    const { data: settings } = await supabase
-      .from("settings")
-      .select("nightly_rate_aud")
-      .eq("id", 1)
-      .single();
-    const rate = settings?.nightly_rate_aud ?? 260;
-    const subtotal = nights * rate;
-    const discount = nights > 4 ? Math.round(subtotal * 0.1) : 0;
-    const total = subtotal - discount;
+    const [{ data: settings }, { data: periods }] = await Promise.all([
+      supabase.from("settings").select("nightly_rate_aud, weekend_rate_aud").eq("id", 1).single(),
+      supabase
+        .from("rate_periods")
+        .select("id, name, start_date, end_date, nightly_rate_aud")
+        .order("start_date"),
+    ]);
+    const midweekRate = settings?.nightly_rate_aud ?? 260;
+    const { discount, total } = quoteStay({
+      check_in: data.check_in,
+      check_out: data.check_out,
+      midweekRate,
+      weekendRate: settings?.weekend_rate_aud ?? midweekRate,
+      periods: periods ?? [],
+    });
+
 
     // Check overlap against bookings + blocked dates
     const { data: existing, error: rpcErr } = await supabase.rpc("get_unavailable_ranges");

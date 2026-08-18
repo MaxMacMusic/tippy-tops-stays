@@ -57,7 +57,7 @@ export const getContactEmail = createServerFn({ method: "GET" }).handler(async (
     .single();
   return {
     email:
-      (data as { contact_email?: string } | null)?.contact_email ?? "tippytopsproperty@gmail.com",
+      (data as { contact_email?: string } | null)?.contact_email ?? "maxmacbookings@gmail.com",
   };
 });
 
@@ -148,7 +148,7 @@ export const submitBooking = createServerFn({ method: "POST" })
         .single();
       const to =
         (contact as { contact_email?: string } | null)?.contact_email ??
-        "tippytopsproperty@gmail.com";
+        "maxmacbookings@gmail.com";
 
       const status = data.kind === "enquiry" ? "enquiry" : "pending";
       const label = data.kind === "enquiry" ? "New enquiry" : "New booking request";

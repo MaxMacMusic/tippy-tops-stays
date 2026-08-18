@@ -31,14 +31,21 @@ export const getUnavailableRanges = createServerFn({ method: "GET" }).handler(as
 });
 
 export const getNightlyRate = createServerFn({ method: "GET" }).handler(async () => {
-  const { data, error } = await publicClient()
-    .from("settings")
-    .select("nightly_rate_aud")
-    .eq("id", 1)
-    .single();
-  if (error || !data) return { rate: 260 };
-  return { rate: data.nightly_rate_aud };
+  const client = publicClient();
+  const [{ data: settings }, { data: periods }] = await Promise.all([
+    client.from("settings").select("nightly_rate_aud, weekend_rate_aud").eq("id", 1).single(),
+    client
+      .from("rate_periods")
+      .select("id, name, start_date, end_date, nightly_rate_aud")
+      .order("start_date"),
+  ]);
+  return {
+    rate: settings?.nightly_rate_aud ?? 260,
+    weekendRate: settings?.weekend_rate_aud ?? settings?.nightly_rate_aud ?? 260,
+    periods: periods ?? [],
+  };
 });
+
 
 export const getContactEmail = createServerFn({ method: "GET" }).handler(async () => {
   const { data } = await publicClient()

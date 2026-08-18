@@ -158,6 +158,10 @@ function Dashboard() {
   const qc = useQueryClient();
   const fetchData = useServerFn(getAdminData);
   const setRate = useServerFn(updateNightlyRate);
+  const setWeekend = useServerFn(updateWeekendRate);
+  const addPeriod = useServerFn(addRatePeriod);
+  const editPeriod = useServerFn(updateRatePeriod);
+  const delPeriod = useServerFn(deleteRatePeriod);
   const setEmail = useServerFn(updateContactEmail);
   const addBlock = useServerFn(addBlockedRange);
   const delBlock = useServerFn(deleteBlockedRange);
@@ -171,6 +175,11 @@ function Dashboard() {
   });
 
   const [rateInput, setRateInput] = useState<string>("");
+  const [weekendInput, setWeekendInput] = useState<string>("");
+  const [periodName, setPeriodName] = useState("");
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
+  const [periodRate, setPeriodRate] = useState("");
   const [emailInput, setEmailInput] = useState<string>("");
   const [blockStart, setBlockStart] = useState("");
   const [blockEnd, setBlockEnd] = useState("");
@@ -180,18 +189,69 @@ function Dashboard() {
 
   useEffect(() => {
     if (data?.rate) setRateInput(String(data.rate));
+    if (data?.weekendRate) setWeekendInput(String(data.weekendRate));
     if (data?.contactEmail) setEmailInput(data.contactEmail);
-  }, [data?.rate, data?.contactEmail]);
+  }, [data?.rate, data?.weekendRate, data?.contactEmail]);
+
+  function invalidateRates() {
+    qc.invalidateQueries({ queryKey: ["admin-data"] });
+    qc.invalidateQueries({ queryKey: ["nightly-rate"] });
+  }
 
   const rateMut = useMutation({
     mutationFn: (rate: number) => setRate({ data: { rate } }),
     onSuccess: () => {
-      toast.success("Nightly rate updated.");
-      qc.invalidateQueries({ queryKey: ["admin-data"] });
-      qc.invalidateQueries({ queryKey: ["nightly-rate"] });
+      toast.success("Midweek rate updated.");
+      invalidateRates();
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const weekendMut = useMutation({
+    mutationFn: (rate: number) => setWeekend({ data: { rate } }),
+    onSuccess: () => {
+      toast.success("Weekend rate updated.");
+      invalidateRates();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const addPeriodMut = useMutation({
+    mutationFn: () =>
+      addPeriod({
+        data: {
+          name: periodName,
+          start_date: periodStart,
+          end_date: periodEnd,
+          rate: Number(periodRate),
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Rate period added.");
+      setPeriodName(""); setPeriodStart(""); setPeriodEnd(""); setPeriodRate("");
+      invalidateRates();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const editPeriodMut = useMutation({
+    mutationFn: (v: { id: string; rate: number }) => editPeriod({ data: v }),
+    onSuccess: () => {
+      toast.success("Rate period updated.");
+      invalidateRates();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const delPeriodMut = useMutation({
+    mutationFn: (id: string) => delPeriod({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Rate period removed.");
+      invalidateRates();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const emailMut = useMutation({
     mutationFn: (email: string) => setEmail({ data: { email } }),

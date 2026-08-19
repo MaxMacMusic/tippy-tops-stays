@@ -18,8 +18,9 @@ export function Hero() {
         </h1>
         <p className="mt-6 max-w-xl text-base opacity-90 md:text-lg">
           The Sunset Shanty at Tippy Tops — wide skies, belted cows on the lane,
-          and a deck that opens onto the valley. Two-night minimum.
+          and a deck that opens onto the valley. A hideaway for two.
         </p>
+
         <div className="mt-10 flex flex-wrap gap-4">
           <a
             href="#book"

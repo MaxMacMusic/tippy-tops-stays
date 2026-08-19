@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "A rustic shack at Tippy Tops in the Gloucester and Barrington hinterland. Two-night minimum stays with big sunsets and quiet hills.",
+          "A rustic shack at Tippy Tops in the Gloucester and Barrington hinterland. A hideaway for two with big sunsets and quiet hills.",
       },
       { name: "author", content: "The Sunset Shanty" },
       { property: "og:site_name", content: "The Sunset Shanty" },
@@ -84,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "A rustic shack at Tippy Tops in the Gloucester and Barrington hinterland. Two-night minimum stays with big sunsets and quiet hills.",
+          "A rustic shack at Tippy Tops in the Gloucester and Barrington hinterland. A hideaway for two with big sunsets and quiet hills.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

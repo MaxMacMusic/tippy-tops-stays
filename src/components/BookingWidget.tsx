@@ -119,10 +119,9 @@ export function BookingWidget() {
           <p className="text-xs uppercase tracking-[0.3em] opacity-70">Reserve</p>
           <h2 className="mt-3 text-4xl md:text-5xl">Pick your dates</h2>
           <p className="mt-4 text-base opacity-80">
-            Two-night minimum. From ${Math.min(nightly, weekendRate)} AUD per night midweek, ${weekendRate} on
-            Friday and Saturday nights. Peak and holiday periods are priced separately — pick your dates for an
-            exact total. Stay 5 nights or more and 10% comes off automatically.
-            No payment is taken online — request your dates or send an enquiry and we&apos;ll confirm by email.
+            The shanty sleeps two guests. Pick your dates for an exact total — rates vary by season and
+            by night of the week. No payment is taken online: request your dates or send an enquiry and
+            we&apos;ll confirm by email.
           </p>
 
 
@@ -136,7 +135,7 @@ export function BookingWidget() {
               selected={range}
               onSelect={setRange}
               disabled={disabledRanges}
-              min={2}
+              min={1}
               className="pointer-events-auto"
               styles={{ caption: { color: "var(--color-primary)" } }}
             />
@@ -153,7 +152,7 @@ export function BookingWidget() {
             }}
           >
             <div className="rounded-lg border border-border bg-secondary/40 p-4">
-              {nights >= 2 && range?.from && range?.to ? (
+              {nights >= 1 && range?.from && range?.to ? (
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="flex items-center justify-between">
                     <div>
@@ -171,18 +170,11 @@ export function BookingWidget() {
                         <span>${b.nights * b.rate}</span>
                       </li>
                     ))}
-                    {discount > 0 && <li className="flex items-center justify-between"><span>Subtotal</span><span>${subtotal}</span></li>}
                   </ul>
-                  {discount > 0 && (
-                    <div className="flex items-center justify-between text-xs text-primary/80">
-                      <span>10% long-stay discount applied</span>
-                      <span>− ${discount}</span>
-                    </div>
-                  )}
                 </div>
               ) : (
 
-                <p className="text-sm text-muted-foreground">Select at least 2 nights to see the total. Stay 5+ nights for 10% off.</p>
+                <p className="text-sm text-muted-foreground">Select your check-in and check-out dates to see the total.</p>
               )}
             </div>
 
@@ -192,10 +184,11 @@ export function BookingWidget() {
               </Field>
               <Field label="Guests">
                 <select value={form.guests} onChange={(e) => setForm({ ...form, guests: Number(e.target.value) })} className={inputCls}>
-                  {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
+                  {[1, 2].map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
               </Field>
             </div>
+
             <Field label="Email">
               <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} />
             </Field>

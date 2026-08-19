@@ -160,10 +160,19 @@ export function BookingWidget() {
                       <div className="font-medium text-primary">
                         {format(range.from, "EEE d MMM")} → {format(range.to, "EEE d MMM")}
                       </div>
-                      <div className="text-muted-foreground">{nights} nights × ${nightly}</div>
+                      <div className="text-muted-foreground">{nights} {nights === 1 ? "night" : "nights"}</div>
                     </div>
                     <div className="font-display text-2xl text-primary">${total}</div>
                   </div>
+                  <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
+                    {rateBreakdown.map((b) => (
+                      <li key={`${b.label}-${b.rate}`} className="flex items-center justify-between">
+                        <span>{b.label} — {b.nights} × ${b.rate}</span>
+                        <span>${b.nights * b.rate}</span>
+                      </li>
+                    ))}
+                    {discount > 0 && <li className="flex items-center justify-between"><span>Subtotal</span><span>${subtotal}</span></li>}
+                  </ul>
                   {discount > 0 && (
                     <div className="flex items-center justify-between text-xs text-primary/80">
                       <span>10% long-stay discount applied</span>
@@ -172,6 +181,7 @@ export function BookingWidget() {
                   )}
                 </div>
               ) : (
+
                 <p className="text-sm text-muted-foreground">Select at least 2 nights to see the total. Stay 5+ nights for 10% off.</p>
               )}
             </div>

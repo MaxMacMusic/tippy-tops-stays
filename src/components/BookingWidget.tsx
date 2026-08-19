@@ -65,8 +65,6 @@ export function BookingWidget() {
     });
   }, [range?.from, range?.to, nights, nightly, weekendRate, periods]);
 
-  const subtotal = quote?.subtotal ?? 0;
-  const discount = quote?.discount ?? 0;
   const total = quote?.total ?? 0;
   const rateBreakdown = useMemo(() => {
     if (!quote) return [] as { label: string; nights: number; rate: number }[];
@@ -81,7 +79,8 @@ export function BookingWidget() {
   }, [quote]);
 
 
-  const valid = nights >= 2 && form.guest_name && form.email;
+  const valid = nights >= 1 && form.guest_name && form.email;
+
 
   const mutation = useMutation({
     mutationFn: async () => {

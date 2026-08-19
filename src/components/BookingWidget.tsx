@@ -101,7 +101,7 @@ export function BookingWidget() {
     onSuccess: (res) => {
       toast.success(
         kind === "booking"
-          ? `Request received — $${res.total_aud} AUD for ${res.nights} nights. No payment taken; we'll confirm availability and email an invoice within 24 hours.`
+          ? `Request received — $${res.total_aud} AUD for ${res.nights} ${res.nights === 1 ? "night" : "nights"}. No payment taken; we'll confirm availability and email an invoice within 24 hours.`
           : "Enquiry sent — we'll be in touch within 24 hours.",
       );
       setForm({ guest_name: "", email: "", phone: "", guests: 2, message: "" });

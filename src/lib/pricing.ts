@@ -80,6 +80,6 @@ export function quoteStay(args: {
   }
 
   const subtotal = lines.reduce((sum, l) => sum + l.rate, 0);
-  const discount = nights > 4 ? Math.round(subtotal * 0.1) : 0;
-  return { nights, lines, subtotal, discount, total: subtotal - discount };
+  return { nights, lines, subtotal, discount: 0, total: subtotal };
 }
+

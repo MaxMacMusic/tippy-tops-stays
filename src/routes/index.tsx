@@ -14,12 +14,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Book The Sunset Shanty at Tippy Tops — a rustic hilltop retreat in the Gloucester / Barrington Hinterland, NSW. Two-night minimum, sweeping valley views.",
+          "Book The Sunset Shanty at Tippy Tops — a rustic hilltop retreat in the Gloucester / Barrington Hinterland, NSW. A hideaway for two with sweeping valley views.",
       },
       { property: "og:title", content: "The Sunset Shanty at Tippy Tops" },
       {
         property: "og:description",
-        content: "Rustic shack, wide hinterland views, two-night minimum stay.",
+        content: "Rustic shack for two, wide hinterland views.",
       },
     ],
     links: [

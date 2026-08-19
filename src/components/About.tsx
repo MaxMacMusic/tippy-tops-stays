@@ -1,11 +1,12 @@
 import deck from "@/assets/valley-hills.jpg";
 
 const facts = [
-  { label: "Sleeps", value: "Up to 4" },
-  { label: "Minimum stay", value: "2 nights" },
-  { label: "Rate", value: "$260 / night" },
+  { label: "Sleeps", value: "2 guests" },
+  { label: "Bed", value: "One queen" },
   { label: "Setting", value: "Off-grid hilltop" },
+  { label: "Getting there", value: "4WD friendly" },
 ];
+
 
 export function About() {
   return (

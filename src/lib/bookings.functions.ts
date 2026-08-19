@@ -67,7 +67,7 @@ const bookingSchema = z.object({
   phone: z.string().trim().max(40).optional().or(z.literal("")),
   check_in: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   check_out: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  guests: z.number().int().min(1).max(4),
+  guests: z.number().int().min(1).max(2),
   message: z.string().trim().max(2000).optional().or(z.literal("")),
   kind: z.enum(["enquiry", "booking"]),
 });
@@ -78,7 +78,8 @@ export const submitBooking = createServerFn({ method: "POST" })
     const ci = new Date(data.check_in);
     const co = new Date(data.check_out);
     const nights = Math.round((co.getTime() - ci.getTime()) / 86400000);
-    if (nights < 2) throw new Error("Minimum 2 nights stay required.");
+    if (nights < 1) throw new Error("Check-out must be after check-in.");
+
 
     const supabase = publicClient();
 

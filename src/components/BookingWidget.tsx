@@ -6,6 +6,8 @@ import "react-day-picker/style.css";
 import { format, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import { getUnavailableRanges, getNightlyRate, submitBooking } from "@/lib/bookings.functions";
+import { quoteStay } from "@/lib/pricing";
+
 
 function toISO(d: Date) {
   // YYYY-MM-DD in local time

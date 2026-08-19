@@ -31,6 +31,8 @@ export function BookingWidget() {
     queryFn: () => fetchRate(),
   });
   const nightly = rateData?.rate ?? 260;
+  const weekendRate = rateData?.weekendRate ?? nightly;
+  const periods = rateData?.periods ?? [];
 
   const disabledRanges = useMemo(() => {
     const today = new Date();
@@ -50,9 +52,32 @@ export function BookingWidget() {
   const [form, setForm] = useState({ guest_name: "", email: "", phone: "", guests: 2, message: "" });
 
   const nights = range?.from && range?.to ? differenceInCalendarDays(range.to, range.from) : 0;
-  const subtotal = nights * nightly;
-  const discount = nights > 4 ? Math.round(subtotal * 0.1) : 0;
-  const total = subtotal - discount;
+  const quote = useMemo(() => {
+    if (!range?.from || !range?.to || nights < 1) return null;
+    return quoteStay({
+      check_in: toISO(range.from),
+      check_out: toISO(range.to),
+      midweekRate: nightly,
+      weekendRate,
+      periods,
+    });
+  }, [range?.from, range?.to, nights, nightly, weekendRate, periods]);
+
+  const subtotal = quote?.subtotal ?? 0;
+  const discount = quote?.discount ?? 0;
+  const total = quote?.total ?? 0;
+  const rateBreakdown = useMemo(() => {
+    if (!quote) return [] as { label: string; nights: number; rate: number }[];
+    const map = new Map<string, { label: string; nights: number; rate: number }>();
+    for (const l of quote.lines) {
+      const key = `${l.label}-${l.rate}`;
+      const entry = map.get(key) ?? { label: l.label, nights: 0, rate: l.rate };
+      entry.nights += 1;
+      map.set(key, entry);
+    }
+    return [...map.values()];
+  }, [quote]);
+
 
   const valid = nights >= 2 && form.guest_name && form.email;
 

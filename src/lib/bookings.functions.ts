@@ -129,8 +129,9 @@ export const submitBooking = createServerFn({ method: "POST" })
         throw new Error("Those dates are no longer available.");
       }
       if (error.message?.includes("MIN_NIGHTS")) {
-        throw new Error("Minimum 2 nights stay required.");
+        throw new Error("Check-out must be after check-in.");
       }
+
       throw new Error("Could not save booking. Please try again.");
     }
 

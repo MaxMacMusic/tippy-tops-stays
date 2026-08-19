@@ -6,6 +6,8 @@ import "react-day-picker/style.css";
 import { format, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import { getUnavailableRanges, getNightlyRate, submitBooking } from "@/lib/bookings.functions";
+import { quoteStay } from "@/lib/pricing";
+
 
 function toISO(d: Date) {
   // YYYY-MM-DD in local time
@@ -31,6 +33,8 @@ export function BookingWidget() {
     queryFn: () => fetchRate(),
   });
   const nightly = rateData?.rate ?? 260;
+  const weekendRate = rateData?.weekendRate ?? nightly;
+  const periods = rateData?.periods ?? [];
 
   const disabledRanges = useMemo(() => {
     const today = new Date();
@@ -50,9 +54,32 @@ export function BookingWidget() {
   const [form, setForm] = useState({ guest_name: "", email: "", phone: "", guests: 2, message: "" });
 
   const nights = range?.from && range?.to ? differenceInCalendarDays(range.to, range.from) : 0;
-  const subtotal = nights * nightly;
-  const discount = nights > 4 ? Math.round(subtotal * 0.1) : 0;
-  const total = subtotal - discount;
+  const quote = useMemo(() => {
+    if (!range?.from || !range?.to || nights < 1) return null;
+    return quoteStay({
+      check_in: toISO(range.from),
+      check_out: toISO(range.to),
+      midweekRate: nightly,
+      weekendRate,
+      periods,
+    });
+  }, [range?.from, range?.to, nights, nightly, weekendRate, periods]);
+
+  const subtotal = quote?.subtotal ?? 0;
+  const discount = quote?.discount ?? 0;
+  const total = quote?.total ?? 0;
+  const rateBreakdown = useMemo(() => {
+    if (!quote) return [] as { label: string; nights: number; rate: number }[];
+    const map = new Map<string, { label: string; nights: number; rate: number }>();
+    for (const l of quote.lines) {
+      const key = `${l.label}-${l.rate}`;
+      const entry = map.get(key) ?? { label: l.label, nights: 0, rate: l.rate };
+      entry.nights += 1;
+      map.set(key, entry);
+    }
+    return [...map.values()];
+  }, [quote]);
+
 
   const valid = nights >= 2 && form.guest_name && form.email;
 
@@ -92,10 +119,12 @@ export function BookingWidget() {
           <p className="text-xs uppercase tracking-[0.3em] opacity-70">Reserve</p>
           <h2 className="mt-3 text-4xl md:text-5xl">Pick your dates</h2>
           <p className="mt-4 text-base opacity-80">
-            Two-night minimum. ${nightly} AUD per night, grand opening rate.
-            Stay 5 nights or more and 10% comes off automatically.
+            Two-night minimum. From ${Math.min(nightly, weekendRate)} AUD per night midweek, ${weekendRate} on
+            Friday and Saturday nights. Peak and holiday periods are priced separately — pick your dates for an
+            exact total. Stay 5 nights or more and 10% comes off automatically.
             No payment is taken online — request your dates or send an enquiry and we&apos;ll confirm by email.
           </p>
+
 
         </div>
 
@@ -131,10 +160,19 @@ export function BookingWidget() {
                       <div className="font-medium text-primary">
                         {format(range.from, "EEE d MMM")} → {format(range.to, "EEE d MMM")}
                       </div>
-                      <div className="text-muted-foreground">{nights} nights × ${nightly}</div>
+                      <div className="text-muted-foreground">{nights} {nights === 1 ? "night" : "nights"}</div>
                     </div>
                     <div className="font-display text-2xl text-primary">${total}</div>
                   </div>
+                  <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
+                    {rateBreakdown.map((b) => (
+                      <li key={`${b.label}-${b.rate}`} className="flex items-center justify-between">
+                        <span>{b.label} — {b.nights} × ${b.rate}</span>
+                        <span>${b.nights * b.rate}</span>
+                      </li>
+                    ))}
+                    {discount > 0 && <li className="flex items-center justify-between"><span>Subtotal</span><span>${subtotal}</span></li>}
+                  </ul>
                   {discount > 0 && (
                     <div className="flex items-center justify-between text-xs text-primary/80">
                       <span>10% long-stay discount applied</span>
@@ -143,6 +181,7 @@ export function BookingWidget() {
                   )}
                 </div>
               ) : (
+
                 <p className="text-sm text-muted-foreground">Select at least 2 nights to see the total. Stay 5+ nights for 10% off.</p>
               )}
             </div>

@@ -80,6 +80,15 @@ export function BookingWidget() {
 
 
   const valid = nights >= 1 && form.guest_name && form.email;
+  const missing = !valid
+    ? nights < 1
+      ? "Pick your check-in and check-out dates to continue."
+      : !form.guest_name && !form.email
+        ? "Add your name and email to continue."
+        : !form.guest_name
+          ? "Add your name to continue."
+          : "Add your email to continue."
+    : null;
 
 
   const mutation = useMutation({
@@ -171,8 +180,14 @@ export function BookingWidget() {
                     ))}
                   </ul>
                 </div>
+              ) : range?.from ? (
+                <div className="flex flex-col gap-1 text-sm">
+                  <div className="font-medium text-primary">
+                    Check-in {format(range.from, "EEE d MMM")}
+                  </div>
+                  <div className="text-muted-foreground">Now tap your check-out date on the calendar.</div>
+                </div>
               ) : (
-
                 <p className="text-sm text-muted-foreground">Select your check-in and check-out dates to see the total.</p>
               )}
             </div>
@@ -201,6 +216,7 @@ export function BookingWidget() {
             <p className="mt-2 text-sm font-medium text-primary">
               {quote ? `Total: $${total} AUD` : `Starting from only $${nightly} a night`}
             </p>
+            {missing && <p className="text-xs text-muted-foreground">{missing}</p>}
             <div className="mt-1 flex gap-3">
               <button
                 type="submit"

@@ -186,6 +186,8 @@ export const submitBooking = createServerFn({ method: "POST" })
           subject: `${label} — ${data.check_in} to ${data.check_out}`,
           html,
         }),
+        // Never let a slow email provider hold up the guest's confirmation.
+        signal: AbortSignal.timeout(4000),
       });
       if (!res.ok) {
         console.error("resend send failed", res.status, await res.text());

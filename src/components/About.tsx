@@ -21,8 +21,8 @@ export function About() {
             Slow mornings, long shadows, and the kind of quiet you can hear.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-            The Sunset Shanty is a rustic retreat perched at Tippy Tops, deep in the
-            Gloucester / Barrington Hinterland. It&apos;s simple by design — built for the view,
+            The Sunset Shanty is a rustic tiny house perched at Tippy Tops, deep in the
+            Gloucester / Barrington Hinterland. It&apos;s simple by design — built for two, the view,
             the weather, and the wildlife that wanders past the deck at dusk.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">

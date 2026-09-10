@@ -199,7 +199,7 @@ export function BookingWidget() {
             </Field>
 
             <p className="mt-2 text-sm font-medium text-primary">
-              Total: ${total || nightly * 2} AUD
+              {quote ? `Total: $${total} AUD` : `Starting from only $${nightly} a night`}
             </p>
             <div className="mt-1 flex gap-3">
               <button

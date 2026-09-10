@@ -10,8 +10,14 @@ import bedroom from "@/assets/interior-bedroom.jpg";
 import kitchen from "@/assets/interior-kitchen.jpg";
 import drinks from "@/assets/interior-drinks.jpg";
 import loft from "@/assets/interior-loft.jpg";
+import entranceGateAsset from "@/assets/entrance-gate.png.asset.json";
+import tinyHouseFirepitAsset from "@/assets/tiny-house-firepit.png.asset.json";
+import propertyAerialAsset from "@/assets/property-aerial.png.asset.json";
 
 const shots = [
+  { src: tinyHouseFirepitAsset.url, alt: "The Sunset Shanty tiny house overlooking the firepit and green hillside", span: "md:col-span-2 md:row-span-2" },
+  { src: propertyAerialAsset.url, alt: "Aerial view of The Sunset Shanty tiny house and its secluded hinterland setting", span: "md:col-span-2" },
+  { src: entranceGateAsset.url, alt: "Country entrance gate leading toward The Sunset Shanty", span: "" },
   { src: deck, alt: "Hardwood deck looking across the valley", span: "md:col-span-2 md:row-span-2" },
   { src: bedroom, alt: "King bed dressed with linen, fresh towels rolled and waiting", span: "" },
   { src: loft, alt: "Loft bedroom nook with ladder and gallery wall of botanical prints", span: "" },

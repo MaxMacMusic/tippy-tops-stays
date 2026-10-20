@@ -3,6 +3,7 @@ import { SiteNav } from "@/components/SiteNav";
 import { Hero } from "@/components/Hero";
 import { Gallery } from "@/components/Gallery";
 import { About } from "@/components/About";
+import { Amenities } from "@/components/Amenities";
 import { BookingWidget } from "@/components/BookingWidget";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Toaster } from "@/components/ui/sonner";
@@ -39,6 +40,7 @@ function Index() {
       <Hero />
       <Gallery />
       <About />
+      <Amenities />
       <BookingWidget />
       <SiteFooter />
       <Toaster richColors position="top-center" />
